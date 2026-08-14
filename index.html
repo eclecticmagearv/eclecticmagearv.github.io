@@ -89,7 +89,17 @@
   .post-title a:hover{color:var(--gold);}
   .post-body{color:var(--parchment-dim); font-size:17px;}
   .post-body p{margin:0 0 14px;}
-  .post-body p:first-of-type::first-letter{font-family:'Cormorant Garamond', serif; font-size:44px; float:left; line-height:0.8; padding:6px 8px 0 0; color:var(--gold);}
+  .post-body p:first-of-type::first-letter{font-family:'Cormorant Garamond', serif; font-size:30px; line-height:1; color:var(--gold); font-weight:500;}
+
+  /* gallery strip on the home page */
+  .gallery-strip{margin-top:16px; height:170px; border:1px solid var(--line); border-radius:var(--radius); position:relative; overflow:hidden; background:var(--surface);}
+  .gallery-strip::after{content:""; position:absolute; inset:0; box-shadow:inset 0 0 40px rgba(0,0,0,0.55); pointer-events:none;}
+  .gframe{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 1.6s ease;}
+  .gframe.show{opacity:1;}
+  .gframe img{width:100%; height:100%; object-fit:cover;}
+  .gallery-label{position:absolute; right:14px; top:10px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; color:var(--faded); text-transform:uppercase; z-index:2; text-shadow:0 1px 3px rgba(0,0,0,0.8);}
+  .gallery-caption{position:absolute; left:14px; bottom:10px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; color:var(--parchment-dim); text-transform:uppercase; z-index:2; text-shadow:0 1px 3px rgba(0,0,0,0.8);}
+  .gallery-strip.empty{display:none;}
 
   @media (prefers-reduced-motion: reduce){*{transition-duration:0.01ms !important; animation-duration:0.01ms !important;}}
 </style>
@@ -124,6 +134,11 @@
     <button class="menu-square" id="menuToggle" aria-label="Open menu" aria-expanded="false">
       <svg viewBox="0 0 20 20"><line class="bar bar1" x1="3" y1="6" x2="17" y2="6"/><line class="bar bar2" x1="3" y1="10" x2="17" y2="10"/><line class="bar bar3" x1="3" y1="14" x2="17" y2="14"/></svg>
     </button>
+  </div>
+
+  <div class="gallery-strip" id="galleryStrip">
+    <span class="gallery-label">From the gallery</span>
+    <span class="gallery-caption" id="galleryCaption"></span>
   </div>
 
   <main class="feed">
@@ -200,6 +215,35 @@
   player.addEventListener('mouseleave', ()=>{idleTimer=setTimeout(()=>player.classList.add('idle'),500);});
   player.addEventListener('mouseenter', ()=>{clearTimeout(idleTimer); player.classList.remove('idle');});
   idleTimer=setTimeout(()=>player.classList.add('idle'),1500);
+
+  // ---- Gallery slideshow ----
+  const galleryImages = [{"src": "images/img_0_11111111111.png", "name": "маска кицуне"}];
+  const galleryIntervalMs = 60000;
+  const gStrip = document.getElementById('galleryStrip');
+  const gCaption = document.getElementById('galleryCaption');
+  if(galleryImages.length === 0){
+    gStrip.classList.add('empty');
+  } else {
+    const frames = galleryImages.map(img => {
+      const f = document.createElement('div');
+      f.className = 'gframe';
+      f.innerHTML = `<img src="${img.src}" alt="${img.name||''}">`;
+      gStrip.appendChild(f);
+      return f;
+    });
+    let gIdx = -1;
+    function showGallery(){
+      frames.forEach(f=>f.classList.remove('show'));
+      let idx;
+      if(frames.length===1){ idx=0; }
+      else { do{ idx=Math.floor(Math.random()*frames.length); }while(idx===gIdx); }
+      gIdx=idx;
+      frames[idx].classList.add('show');
+      gCaption.textContent = galleryImages[idx].name || '';
+    }
+    showGallery();
+    if(frames.length>1){ setInterval(showGallery, galleryIntervalMs); }
+  }
 </script>
 
 </body>
